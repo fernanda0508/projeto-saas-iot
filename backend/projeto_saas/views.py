@@ -23,10 +23,17 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
-    def perform_create(self, serializer):
-        user = serializer.save()
-        user.set_password(user.password)  # Criptografa a senha
-        user.save()
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Cria o usuário e criptografa a senha automaticamente
+        user = User.objects.create_user(
+            username=serializer.validated_data["username"],
+            email=serializer.validated_data["email"],
+            password=serializer.validated_data["password"],
+        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class SensorViewSet(viewsets.ModelViewSet):
