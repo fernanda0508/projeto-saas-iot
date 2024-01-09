@@ -49,17 +49,17 @@ const Sidebar: React.FC = () => {
     {
       text: 'Configurações da Placa',
       icon: <SettingsIcon />,
-      href: '/settings',
+      href: '/configuracoes/placa',
     },
     {
       text: 'Conexão e Protocolos',
       icon: <LinkIcon />,
-      href: '/connection',
+      href: '/configuracoes/protocolo',
     },
     {
       text: 'Programação e Automação',
       icon: <CodeIcon />,
-      href: '/automation',
+      href: '/configuracoes/codigo',
     },
     // Adicione mais itens aqui conforme necessário
   ]
