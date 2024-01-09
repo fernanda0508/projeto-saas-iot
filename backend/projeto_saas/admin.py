@@ -4,8 +4,8 @@ from projeto_saas.models import Sensor, Topicos, Wifi, Mqtt, Placa
 
 # Opcional: Personalizar a aparência no admin
 class SensorAdmin(admin.ModelAdmin):
-    list_display = ("tipo", "pino_gpio", "intervalo_leitura", "placa")
-    list_filter = ("tipo", "placa")
+    list_display = ("tipo_sensor", "pino_gpio", "intervalo_leitura", "placa")
+    list_filter = ("tipo_sensor", "placa")
     search_fields = ("tipo",)
 
 

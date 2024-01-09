@@ -26,7 +26,10 @@ class Placa(models.Model):
 
 
 class Sensor(models.Model):
-    tipo = models.CharField(max_length=50)
+    tipo_sensor = models.CharField(max_length=50, default="Sensor Flame")
+    tipo_experimento = models.CharField(
+        max_length=50, default="Monitoramento de chamas"
+    )
     pino_gpio = models.IntegerField()
     intervalo_leitura = models.IntegerField()
     placa = models.ForeignKey(Placa, on_delete=models.CASCADE)
