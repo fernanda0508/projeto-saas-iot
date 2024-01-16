@@ -48,4 +48,35 @@ export const getUserProfile = async () => {
   return response.data;
 };
 
+export const placaService = {
+  salvarConfiguracao: async (
+    modeloPlaca: string,
+    ssid: string,
+    senhaWifi: string
+  ) => {
+    const response = await api.post("/projeto_saas/placas/", {
+      modelo_placa: modeloPlaca,
+      ssid: ssid,
+      senha_wifi: senhaWifi,
+    });
+    return response.data;
+  },
+  // ...outras funções relacionadas a placa
+};
+
+export const createSensorConfiguration = async (configurationData: any) => {
+  const response = await api.post("/projeto_saas/sensores/", configurationData);
+  return response.data;
+};
+
+export const fetchExperimentos = async () => {
+  const response = await api.get("/projeto_saas/experimentos/");
+  return response.data;
+};
+
+export const fetchSensores = async () => {
+  const response = await api.get("/projeto_saas/sensores/");
+  return response.data;
+};
+
 export default api;

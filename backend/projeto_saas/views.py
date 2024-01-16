@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status, views
-from projeto_saas.models import Sensor, Topicos, Wifi, Mqtt, Placa
+from projeto_saas.models import Sensor, Topicos, Wifi, Mqtt, Placa, Experimento
 from django.contrib.auth.models import User
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -11,6 +11,7 @@ from projeto_saas.serializers import (
     WifiSerializer,
     MqttSerializer,
     PlacaSerializer,
+    ExperimentoSerializer,
 )
 
 
@@ -39,6 +40,11 @@ class UserViewSet(viewsets.ModelViewSet):
 class SensorViewSet(viewsets.ModelViewSet):
     queryset = Sensor.objects.all()
     serializer_class = SensorSerializer
+
+
+class ExperimentoViewSet(viewsets.ModelViewSet):
+    queryset = Experimento.objects.all()
+    serializer_class = ExperimentoSerializer
 
 
 class TopicosViewSet(viewsets.ModelViewSet):

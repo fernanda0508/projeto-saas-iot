@@ -7,6 +7,7 @@ from .views import (
     WifiViewSet,
     MqttViewSet,
     PlacaViewSet,
+    ExperimentoViewSet,
 )
 
 router = DefaultRouter()
@@ -14,6 +15,7 @@ router = DefaultRouter()
 # router.register(r"perfilusuario", PerfilUsuarioViewSet)
 router.register(r"users", UserViewSet)
 router.register(r"sensores", SensorViewSet)
+router.register(r"experimentos", ExperimentoViewSet)
 router.register(r"topicos", TopicosViewSet)
 router.register(r"wifi", WifiViewSet)
 router.register(r"mqtt", MqttViewSet)

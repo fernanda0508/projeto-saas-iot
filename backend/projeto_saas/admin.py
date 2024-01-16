@@ -1,5 +1,5 @@
 from django.contrib import admin
-from projeto_saas.models import Sensor, Topicos, Wifi, Mqtt, Placa
+from projeto_saas.models import Sensor, Topicos, Wifi, Mqtt, Placa, Experimento
 
 
 # Opcional: Personalizar a aparência no admin
@@ -38,3 +38,4 @@ admin.site.register(Topicos, TopicosAdmin)
 admin.site.register(Wifi, WifiAdmin)
 admin.site.register(Mqtt, MqttAdmin)
 admin.site.register(Placa, PlacaAdmin)
+admin.site.register(Experimento)

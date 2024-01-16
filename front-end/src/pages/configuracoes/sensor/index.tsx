@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Paper, FormControl, InputLabel, MenuItem, Select, TextField, Typography, Button } from '@mui/material';
 import { useForm, SubmitHandler, Controller } from "react-hook-form"
+import { createSensorConfiguration, fetchExperimentos, fetchSensores } from "../../../services/api"; // Importe sua função API
+
 
 type InputForm = {
   experimento: string,
@@ -18,16 +20,55 @@ const SensorConfigurations = () => {
     formState: { errors },
   } = useForm<InputForm>()
 
+  const [experimentos, setExperimentos] = useState([]);
+  const [sensores, setSensores] = useState([]);
+  const [sensoresFiltrados, setSensoresFiltrados] = useState([]);
   const selectedExperiment = watch("experimento");
 
-  const experimentoSensorsMap: { [key: string]: string[] } = {
-    "0": ["DHT11"], // Sensores para Monitoramento temperatura e umidade
-    "1": ["Sensor Flame"], // Sensores para Monitoramento de chamas
-    "2": ["LED RGB"], // Sensores para Controle de LED RGB
-    "3": ["Sensor de Nível de Água", "Módulo Relé"], // Sensores para Acionamento de bombas de agua
-  };
 
-  const onSubmit: SubmitHandler<InputForm> = (data) => console.log(data)
+
+
+  useEffect(() => {
+    const carregarDados = async () => {
+      try {
+        const experimentosData = await fetchExperimentos();
+        setExperimentos(experimentosData);
+        const sensoresData = await fetchSensores();
+        setSensores(sensoresData);
+      } catch (error) {
+        console.error("Erro ao carregar dados da API", error);
+      }
+    };
+
+    carregarDados();
+  }, []);
+
+  console.log({ sensores })
+
+
+  useEffect(() => {
+    if (selectedExperiment) {
+      // Filtrar sensores com base no experimento selecionado
+      const sensoresRelacionados = sensores.filter(sensor => sensor.experimento_id === selectedExperiment);
+      setSensoresFiltrados(sensoresRelacionados);
+    } else {
+      setSensoresFiltrados([]);
+    }
+  }, [selectedExperiment, sensores]);
+
+  console.log({ selectedExperiment })
+
+
+  const onSubmit: SubmitHandler<InputForm> = async (data) => {
+    try {
+      const response = await createSensorConfiguration(data);
+      console.log(response);
+      // Aqui você pode redirecionar o usuário ou mostrar alguma mensagem de sucesso
+    } catch (error) {
+      console.error("Erro ao enviar configuração do sensor:", error);
+      // Trate os erros da requisição aqui
+    }
+  }
 
   return (
 
@@ -51,10 +92,10 @@ const SensorConfigurations = () => {
                 label="Tipo de Experimento"
                 error={!!errors.experimento}
               >
-                <MenuItem value="0">Monitoramento temperatura e umidade</MenuItem>
-                <MenuItem value="1">Monitoramento de chamas</MenuItem>
-                <MenuItem value="2">Controle de LED RGB</MenuItem>
-                <MenuItem value="3">Acionamento de bombas de agua</MenuItem>
+                {experimentos.map((exp, index) => (
+                  <MenuItem key={index} value={exp.id}>{exp.tipo_experimento}</MenuItem>
+                ))}
+
               </Select>
             </FormControl>
           )}
@@ -75,8 +116,8 @@ const SensorConfigurations = () => {
                 label="Tipo de Sensor"
                 error={!!errors.sensor}
               >
-                {experimentoSensorsMap[selectedExperiment]?.map((sensor, index) => (
-                  <MenuItem key={index} value={sensor}>{sensor}</MenuItem>
+                {sensoresFiltrados.map((sensor, index) => (
+                  <MenuItem key={index} value={sensor.id}>{sensor.tipo_sensor}</MenuItem>
                 ))}
               </Select>
             </FormControl>
