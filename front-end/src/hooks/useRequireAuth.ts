@@ -1,10 +1,14 @@
 // hooks/useRequireAuth.ts
-import { useEffect } from "react";
+import { ReactNode, createElement, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
 
-const useRequireAuth = () => {
-  const { isAuthenticated } = useAuth();
+type ChildrenType = {
+  children: ReactNode;
+};
+
+const ProtectedRoute = ({ children }: ChildrenType) => {
+  const { user, isAuthenticated, logout, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -14,7 +18,11 @@ const useRequireAuth = () => {
     }
   }, [isAuthenticated, router]);
 
-  return isAuthenticated;
+  if (loading) {
+    return createElement("div", null, "Carregando...");
+  }
+
+  return isAuthenticated ? children : null;
 };
 
-export default useRequireAuth;
+export default ProtectedRoute;

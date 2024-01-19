@@ -1,45 +1,52 @@
 // context/AuthContext.tsx
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import { authService, getUserProfile } from '@/services/api'; // Adicione uma função para buscar o perfil do usuário
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import { authService, getUserProfile } from '@/services/api';
 import Router from 'next/router';
+import axios from "axios";
 
 interface User {
-  username: string; // Defina aqui os campos do seu objeto de usuário
-
+  username: string; // Adicione outros campos conforme necessário
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  loading: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType>(null!);
+const AuthContext = createContext<AuthContextType | null>(null);
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const setAxiosAuthToken = (token: string) => {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  };
 
   useEffect(() => {
-    // Carrega o token armazenado e define o usuário se estiver autenticado
     const token = localStorage.getItem('accessToken');
     if (token) {
-      setIsAuthenticated(true);
-      fetchUserProfile(); // Buscar informações do usuário
+      setAxiosAuthToken(token);
+      fetchUserProfile();
+    } else {
+      setLoading(false);
     }
   }, []);
 
   const fetchUserProfile = async () => {
     try {
-      const userProfile = await getUserProfile(); // Implemente esta função para buscar o perfil do usuário
+      const userProfile = await getUserProfile();
       setUser(userProfile);
+      setIsAuthenticated(true);
     } catch (error) {
       console.error('Erro ao buscar perfil do usuário', error);
+      logout(); // Limpar o estado de autenticação se ocorrer um erro
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -48,28 +55,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const data = await authService.login(username, password);
       localStorage.setItem('accessToken', data.access);
       localStorage.setItem('refreshToken', data.refresh);
-      setIsAuthenticated(true);
-      await fetchUserProfile(); // Buscar informações do usuário após o login bem-sucedido
-      Router.push('/'); // Redireciona para a página inicial após o login
+      setAxiosAuthToken(data.access);
+      await fetchUserProfile();
+      Router.push('/');
     } catch (error) {
       console.error('Erro no login', error);
-      throw error;
     }
   };
 
   const logout = () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    delete axios.defaults.headers.common['Authorization'];
     setIsAuthenticated(false);
     setUser(null);
-    Router.push('/usuario/login'); // Redireciona para a página de login
+    Router.push('/usuario/login');
   };
 
+  if (loading) {
+    return <div>Carregando...</div>; // Ou algum componente de carregamento
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => useContext(AuthContext) as AuthContextType;
