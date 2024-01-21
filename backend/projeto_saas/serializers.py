@@ -94,14 +94,8 @@ class MqttSerializer(serializers.ModelSerializer):
 class PlacaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Placa
-        fields = ["id", "modelo", "wifi", "mqtt"]
+        fields = ["id", "modelo"]
 
     def create(self, validated_data):
-        wifi_id = validated_data.pop("wifi")
-        mqtt_id = validated_data.pop("mqtt")
-        wifi_instance = Wifi.objects.get(id=wifi_id)
-        mqtt_instance = Mqtt.objects.get(id=mqtt_id)
-        placa_instance = Placa.objects.create(
-            wifi=wifi_instance, mqtt=mqtt_instance, **validated_data
-        )
+        placa_instance = Placa.objects.create(**validated_data)
         return placa_instance

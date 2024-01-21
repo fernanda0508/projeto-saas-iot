@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Typography, FormControl, InputLabel, Select, MenuItem, TextField, Button, Box, Paper } from '@mui/material';
 import { useForm, Controller } from "react-hook-form";
 import ProtectedRoute from '@/hooks/useRequireAuth';
+import { placaService } from '@/services/api';
 
 type InputForm = {
   modeloPlaca: string;
@@ -9,8 +10,28 @@ type InputForm = {
   senhaWifi: string;
 }
 
+type placa = {
+  modelo: string
+}
+
 const ConfiguracaoPlaca: React.FC = () => {
   const { control, handleSubmit, formState: { errors } } = useForm<InputForm>();
+  const [placas, setPlacas] = useState([])
+
+  useEffect(() => {
+    const carregarDados = async () => {
+      try {
+        const placasData = await placaService.getPlacas();
+        setPlacas(placasData)
+      } catch (error) {
+        console.error("Erro ao carregar dados da API", error);
+      }
+    };
+
+    carregarDados();
+  }, []);
+
+  console.log(placas)
 
   const onSubmit = (data: InputForm) => {
     console.log(data);
@@ -44,8 +65,10 @@ const ConfiguracaoPlaca: React.FC = () => {
                     label="Modelo da Placa"
                     error={!!errors.modeloPlaca}
                   >
-                    <MenuItem value="ESP32">ESP32</MenuItem>
-                    {/* Adicione mais <MenuItem> aqui para outros modelos */}
+                    {placas.map((placa: placa, index: number) => (
+                      <MenuItem key={index} value={placa.id}>{placa.modelo}</MenuItem>
+                    ))}
+
                   </Select>
                 </FormControl>
               )}

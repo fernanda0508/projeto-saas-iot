@@ -49,19 +49,17 @@ export const getUserProfile = async () => {
 };
 
 export const placaService = {
-  salvarConfiguracao: async (
-    modeloPlaca: string,
-    ssid: string,
-    senhaWifi: string
-  ) => {
+  salvarConfiguracao: async (modeloPlaca: string) => {
     const response = await api.post("/projeto_saas/placas/", {
       modelo_placa: modeloPlaca,
-      ssid: ssid,
-      senha_wifi: senhaWifi,
     });
     return response.data;
   },
-  // ...outras funções relacionadas a placa
+
+  getPlacas: async () => {
+    const response = await api.get("/projeto_saas/placas/");
+    return response.data;
+  },
 };
 
 export const createSensorConfiguration = async (configurationData: any) => {

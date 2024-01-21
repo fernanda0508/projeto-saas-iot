@@ -11,6 +11,13 @@ type InputForm = {
   gpio: string,
 }
 
+type experimento = {
+  id: number,
+  tipo_experimento: string
+}
+
+
+
 const SensorConfigurations = () => {
 
   const {
@@ -50,7 +57,7 @@ const SensorConfigurations = () => {
   useEffect(() => {
     if (selectedExperiment) {
       // Filtrar sensores com base no experimento selecionado
-      const sensoresRelacionados = sensores.filter(sensor => sensor.experimento_id === selectedExperiment);
+      const sensoresRelacionados = sensores.filter((sensor: any) => sensor.experimento_id === selectedExperiment);
       setSensoresFiltrados(sensoresRelacionados);
     } else {
       setSensoresFiltrados([]);
@@ -93,7 +100,7 @@ const SensorConfigurations = () => {
                   label="Tipo de Experimento"
                   error={!!errors.experimento}
                 >
-                  {experimentos.map((exp, index) => (
+                  {experimentos.map((exp: experimento, index: number) => (
                     <MenuItem key={index} value={exp.id}>{exp.tipo_experimento}</MenuItem>
                   ))}
 

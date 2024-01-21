@@ -7,6 +7,7 @@ class Wifi(models.Model):
     senha = models.CharField(
         max_length=128
     )  # Campo para armazenar a senha criptografada
+    placa = models.ForeignKey("Placa", on_delete=models.PROTECT, null=True)
 
     def __str__(self):
         return self.ssid
@@ -18,6 +19,7 @@ class Mqtt(models.Model):
     usuario = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="mqtt_users"
     )
+    placa = models.ForeignKey("Placa", on_delete=models.PROTECT, null=True)
 
     def __str__(self):
         return f"{self.host}:{self.porta}"
@@ -25,10 +27,6 @@ class Mqtt(models.Model):
 
 class Placa(models.Model):
     modelo = models.CharField(max_length=100)
-    wifi = models.OneToOneField(
-        Wifi, on_delete=models.CASCADE, related_name="placa_wifi"
-    )
-    mqtt = models.OneToOneField(Mqtt, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.modelo
