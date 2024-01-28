@@ -1,5 +1,12 @@
 from rest_framework import serializers
-from projeto_saas.models import Sensor, Topicos, Wifi, Mqtt, Placa, Experimento
+from projeto_saas.models import (
+    Sensor,
+    Topicos,
+    Wifi,
+    Mqtt,
+    Placa,
+    Experimento,
+)
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 
@@ -32,40 +39,15 @@ class UserSerializer(serializers.ModelSerializer):
 #         fields = "__all__"
 
 
-# no serializer do sensor não está vindo o experimento_id nem o placa_id, por que ? como faço aparecer?
 class SensorSerializer(serializers.ModelSerializer):
-    placa_id = serializers.PrimaryKeyRelatedField(
-        queryset=Placa.objects.all(), source="placa"
-    )
-    experimento_id = serializers.PrimaryKeyRelatedField(
-        queryset=Experimento.objects.all(), source="experimento"
-    )
-
     class Meta:
         model = Sensor
-        fields = [
-            "id",
-            "tipo_sensor",
-            "pino_gpio",
-            "intervalo_leitura",
-            "placa_id",
-            "experimento_id",
-        ]
-
-    def create(self, validated_data):
-        # O método pop() é usado para obter e remover os dados da placa e do experimento dos dados validados.
-        placa_data = validated_data.pop("placa")
-        experimento_data = validated_data.pop("experimento")
-
-        # Cria a instância do Sensor com os dados da placa e do experimento.
-        sensor_instance = Sensor.objects.create(
-            placa=placa_data, experimento=experimento_data, **validated_data
-        )
-
-        return sensor_instance
+        fields = ["id", "tipo_sensor", "pino_gpio", "experimento", "placa"]
 
 
 class TopicosSerializer(serializers.ModelSerializer):
+    mqtt = serializers.PrimaryKeyRelatedField(queryset=Mqtt.objects.all())
+
     class Meta:
         model = Topicos
         fields = "__all__"
@@ -78,17 +60,23 @@ class ExperimentoSerializer(serializers.ModelSerializer):
 
 
 class WifiSerializer(serializers.ModelSerializer):
+    placa = serializers.PrimaryKeyRelatedField(
+        queryset=Placa.objects.all(), allow_null=True
+    )
+
     class Meta:
         model = Wifi
         fields = "__all__"
 
 
 class MqttSerializer(serializers.ModelSerializer):
-    usuario = UserSerializer()
+    usuario = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), default=serializers.CurrentUserDefault()
+    )
 
     class Meta:
         model = Mqtt
-        fields = "__all__"
+        fields = ["id", "host", "porta", "usuario", "placa"]
 
 
 class PlacaSerializer(serializers.ModelSerializer):

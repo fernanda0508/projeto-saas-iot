@@ -20,6 +20,7 @@ router.register(r"topicos", TopicosViewSet)
 router.register(r"wifi", WifiViewSet)
 router.register(r"mqtt", MqttViewSet)
 router.register(r"placas", PlacaViewSet)
+# router.register(r"configuracoes", ConfiguracoesViewSet)
 
 
 urlpatterns = [

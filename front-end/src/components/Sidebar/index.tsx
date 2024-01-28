@@ -42,14 +42,9 @@ const Sidebar: React.FC = () => {
   };
   const drawerItems = [
     {
-      text: 'Configurar Sensor',
+      text: 'Configurar Placa e Sensor',
       icon: <SensorIcon />,
       href: '/configuracoes/sensor',
-    },
-    {
-      text: 'Configurações da Placa',
-      icon: <SettingsIcon />,
-      href: '/configuracoes/placa',
     },
     {
       text: 'Conexão e Protocolos',

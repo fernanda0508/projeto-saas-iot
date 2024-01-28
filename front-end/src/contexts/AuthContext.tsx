@@ -5,7 +5,8 @@ import Router from 'next/router';
 import axios from "axios";
 
 interface User {
-  username: string; // Adicione outros campos conforme necessário
+  id: number,
+  username: string // Adicione outros campos conforme necessário
 }
 
 interface AuthContextType {

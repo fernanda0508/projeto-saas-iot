@@ -1,40 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Paper, FormControl, InputLabel, MenuItem, Select, TextField, Typography, Button } from '@mui/material';
-import { useForm, SubmitHandler, Controller } from "react-hook-form"
-import { createSensorConfiguration, fetchExperimentos, fetchSensores } from "../../../services/api"; // Importe sua função API
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import ProtectedRoute from '@/hooks/useRequireAuth';
-
+import { placaService, fetchExperimentos, fetchSensores } from '@/services/api';
+import { useConfiguracoes } from '@/contexts/ConfigContext';
 
 type InputForm = {
-  experimento: string,
-  sensor: string[],
-  gpio: string,
-}
-
-type experimento = {
   id: number,
-  tipo_experimento: string
-}
+  tipo_sensor: string,
+  pino_gpio: number,
+  experimento: number,
+  placa: number,
+};
 
-
-
-const SensorConfigurations = () => {
-
-  const {
-    register,
-    handleSubmit,
-    watch,
-    control,
-    formState: { errors },
-  } = useForm<InputForm>()
-
+const SensorConfigurations: React.FC = () => {
+  const { control, handleSubmit, watch, register, formState: { errors } } = useForm<InputForm>();
   const [experimentos, setExperimentos] = useState([]);
   const [sensores, setSensores] = useState([]);
   const [sensoresFiltrados, setSensoresFiltrados] = useState([]);
+  const [placas, setPlacas] = useState([]);
   const selectedExperiment = watch("experimento");
-
-
-
+  const { guardarConfiguracoes } = useConfiguracoes();
 
   useEffect(() => {
     const carregarDados = async () => {
@@ -43,6 +29,8 @@ const SensorConfigurations = () => {
         setExperimentos(experimentosData);
         const sensoresData = await fetchSensores();
         setSensores(sensoresData);
+        const placasData = await placaService.getPlacas();
+        setPlacas(placasData);
       } catch (error) {
         console.error("Erro ao carregar dados da API", error);
       }
@@ -51,40 +39,39 @@ const SensorConfigurations = () => {
     carregarDados();
   }, []);
 
-  console.log({ sensores })
-
-
   useEffect(() => {
     if (selectedExperiment) {
-      // Filtrar sensores com base no experimento selecionado
-      const sensoresRelacionados = sensores.filter((sensor: any) => sensor.experimento_id === selectedExperiment);
+      const sensoresRelacionados = sensores.filter((sensor: InputForm) => sensor.experimento === selectedExperiment);
       setSensoresFiltrados(sensoresRelacionados);
     } else {
       setSensoresFiltrados([]);
     }
   }, [selectedExperiment, sensores]);
 
-  console.log({ selectedExperiment })
-
-
   const onSubmit: SubmitHandler<InputForm> = async (data) => {
     try {
-      const response = await createSensorConfiguration(data);
-      console.log(response);
-      // Aqui você pode redirecionar o usuário ou mostrar alguma mensagem de sucesso
+
+      const dataModificado = {
+        id: Number(data.tipo_sensor),
+        pino_gpio: Number(data.pino_gpio),
+        experimento: data.experimento,
+        placa: data.placa
+      }
+      guardarConfiguracoes({ sensor: dataModificado });
+      console.log("Dados do sensor armazenados", dataModificado);
     } catch (error) {
       console.error("Erro ao enviar configuração do sensor:", error);
-      // Trate os erros da requisição aqui
     }
-  }
+  };
+
+  // console.log({ sensores })
 
   return (
     <ProtectedRoute>
       <Box component={"form"} onSubmit={handleSubmit(onSubmit)}>
         <Paper elevation={2} sx={{ p: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            Configurações do Sensor
-          </Typography>
+          <Typography variant="h6" gutterBottom>Configurações do Sensor</Typography>
+
           <Controller
             name="experimento"
             control={control}
@@ -92,38 +79,25 @@ const SensorConfigurations = () => {
             rules={{ required: "Este campo é obrigatório" }}
             render={({ field }) => (
               <FormControl fullWidth margin="normal">
-                <InputLabel id="experimento-type-label">Tipo de Experimento</InputLabel>
-                <Select
-                  {...field}
-                  labelId="experimento-type-label"
-                  id="experimento-type"
-                  label="Tipo de Experimento"
-                  error={!!errors.experimento}
-                >
-                  {experimentos.map((exp: experimento, index: number) => (
+                <InputLabel id="experimento-label">Tipo de Experimento</InputLabel>
+                <Select {...field} labelId="experimento-label" label="Tipo de Experimento">
+                  {experimentos.map((exp, index) => (
                     <MenuItem key={index} value={exp.id}>{exp.tipo_experimento}</MenuItem>
                   ))}
-
                 </Select>
               </FormControl>
             )}
           />
+
           <Controller
-            name="sensor"
+            name="tipo_sensor"
             control={control}
-            defaultValue={[]}
-            rules={{ required: "Selecione pelo menos um sensor" }}
+            defaultValue=""
+            rules={{ required: "Este campo é obrigatório" }}
             render={({ field }) => (
               <FormControl fullWidth margin="normal">
-                <InputLabel id="sensor-type-label">Tipo de Sensor</InputLabel>
-                <Select
-                  {...field}
-                  multiple
-                  labelId="sensor-type-label"
-                  id="sensor-type"
-                  label="Tipo de Sensor"
-                  error={!!errors.sensor}
-                >
+                <InputLabel id="tipo-sensor-label">Tipo de Sensor</InputLabel>
+                <Select {...field} labelId="tipo-sensor-label" label="Tipo de Sensor">
                   {sensoresFiltrados.map((sensor, index) => (
                     <MenuItem key={index} value={sensor.id}>{sensor.tipo_sensor}</MenuItem>
                   ))}
@@ -131,24 +105,39 @@ const SensorConfigurations = () => {
               </FormControl>
             )}
           />
+
           <TextField
             fullWidth
             label="Pino GPIO"
             margin="normal"
-            {...register("gpio", { required: "Este campo é obrigatório" })}
-            error={!!errors.gpio}
-            helperText={errors.gpio?.message}
+            {...register("pino_gpio", { required: "Este campo é obrigatório" })}
+            error={!!errors.pino_gpio}
+            helperText={errors.pino_gpio?.message}
+          />
+
+          <Controller
+            name="placa"
+            control={control}
+            defaultValue=""
+            rules={{ required: "Este campo é obrigatório" }}
+            render={({ field }) => (
+              <FormControl fullWidth margin="normal">
+                <InputLabel id="placa-label">Modelo da Placa</InputLabel>
+                <Select {...field} labelId="placa-label" label="Modelo da Placa">
+                  {placas.map((placa, index) => (
+                    <MenuItem key={index} value={placa.id}>{placa.modelo}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
           />
 
           <Box sx={{ display: 'flex', justifyContent: 'end', mt: 2 }}>
-
-            <Button variant="contained" type='submit' sx={{}}>Próximo</Button>
+            <Button variant="contained" type="submit">Próximo</Button>
           </Box>
         </Paper>
       </Box>
     </ProtectedRoute>
-
-
   );
 };
 

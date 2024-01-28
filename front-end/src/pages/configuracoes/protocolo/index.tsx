@@ -3,26 +3,48 @@ import { Grid, Container, Typography, TextField, Button, Box, Paper, Divider } f
 import ProtectedRoute from '@/hooks/useRequireAuth';
 import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from 'react-hook-form';
+import { useConfiguracoes } from '@/contexts/ConfigContext';
+import converterNumber from '@/components/ConvertNumber';
 
 // Tipagem para os dados do formulário
 interface IFormInput {
-  hostMqtt: string;
-  portaMqtt: string;
-  topicoMqtt: string;
-  usuarioMqtt: string;
-  senhaMqtt: string;
+  id: number;
+  host: string;
+  porta: string;
+  topico: string;
+  usuario: string;
   ssid: string;
-  senhaWifi: string;
+  senha: string;
 }
 
 const ConfiguracoesMqttWifi: React.FC = () => {
   const { user } = useAuth();
   const { register, handleSubmit, formState: { errors } } = useForm<IFormInput>();
-
+  const { enviarConfiguracoesParaAPI, guardarConfiguracoes, configuracoes } = useConfiguracoes();
 
   const onSubmit = (data: IFormInput) => {
-    console.log(data);
-    // Trate o envio do formulário aqui
+    console.log(user.id)
+    // Preparar dados para o MQTT e Wi-Fi
+    const dadosMqtt = {
+      host: data.host,
+      porta: converterNumber(data.porta),
+      usuario: user?.id ?? 0,  // Envia o ID do usuário
+      placa: configuracoes.sensor?.placa ?? 0   // Usa o ID da placa selecionada anteriormente
+    };
+
+    const dadosWifi = {
+      ssid: data.ssid,
+      senha: data.senha,
+      placa: configuracoes.sensor?.placa ?? 0
+    };
+
+    // Armazenar no contexto
+    guardarConfiguracoes({
+      mqtt: dadosMqtt,
+      wifi: dadosWifi,
+      topicos: [{ topico: data.topico }]  // Tópicos como array
+    });
+
   };
 
   return (
@@ -42,31 +64,36 @@ const ConfiguracoesMqttWifi: React.FC = () => {
                   fullWidth
                   label="Host MQTT"
                   margin="normal"
-                  {...register('hostMqtt', { required: 'Host MQTT é obrigatório' })}
+                  error={!!errors.host}
+                  helperText={errors.host?.message}
+                  {...register('host', { required: 'Host MQTT é obrigatório' })}
                 />
                 <TextField
                   fullWidth
                   label="Porta MQTT"
                   margin="normal"
-                  {...register('portaMqtt', { required: 'Porta MQTT é obrigatório' })}
+                  {...register('porta', { required: 'Porta MQTT é obrigatório' })}
+                  error={!!errors.porta}
+                  helperText={errors.porta?.message}
 
                 />
                 <TextField
                   fullWidth
                   label="Tópico MQTT"
                   margin="normal"
-                  {...register('topicoMqtt', { required: 'Tópico MQTT é obrigatório' })}
-
+                  {...register('topico', { required: 'Tópico MQTT é obrigatório' })}
+                  error={!!errors.topico}
+                  helperText={errors.topico?.message}
                 />
                 <TextField
                   fullWidth
                   label="Nome de Usuário MQTT"
                   margin="normal"
                   value={user?.username}
-                  {...register('usuarioMqtt', { required: 'Usuário MQTT é obrigatório' })}
                   InputProps={{
                     readOnly: true,
                   }}
+                  {...register('usuario', { required: 'Usuário MQTT é obrigatório' })}
                 />
                 <Typography variant="caption" style={{ color: 'gray' }}>
                   O usuário definido aqui é o mesmo utilizado no seu cadastro.
@@ -99,6 +126,8 @@ const ConfiguracoesMqttWifi: React.FC = () => {
                   fullWidth
                   label="SSID"
                   margin="normal"
+                  error={!!errors.ssid}
+                  helperText={errors.ssid?.message}
                   {...register('ssid', { required: 'SSID é obrigatório' })}
                 />
                 <TextField
@@ -106,7 +135,9 @@ const ConfiguracoesMqttWifi: React.FC = () => {
                   label="Senha Wi-Fi"
                   type="password"
                   margin="normal"
-                  {...register('senhaWifi', { required: 'Senha do Wi-fi é obrigatório' })}
+                  error={!!errors.senha}
+                  helperText={errors.senha?.message}
+                  {...register('senha', { required: 'Senha do Wi-fi é obrigatório' })}
                 />
               </Grid>
             </Grid>

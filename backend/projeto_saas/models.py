@@ -16,9 +16,7 @@ class Wifi(models.Model):
 class Mqtt(models.Model):
     host = models.CharField(max_length=100)
     porta = models.IntegerField()
-    usuario = models.OneToOneField(
-        User, on_delete=models.CASCADE, related_name="mqtt_users"
-    )
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE)
     placa = models.ForeignKey("Placa", on_delete=models.PROTECT, null=True)
 
     def __str__(self):
@@ -43,7 +41,7 @@ class Sensor(models.Model):
     tipo_sensor = models.CharField(max_length=50, default="")
     experimento = models.ForeignKey(Experimento, on_delete=models.CASCADE, null=True)
     pino_gpio = models.IntegerField()
-    intervalo_leitura = models.IntegerField()
+    # intervalo_leitura = models.IntegerField()
     placa = models.ForeignKey(Placa, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -52,7 +50,7 @@ class Sensor(models.Model):
 
 class Topicos(models.Model):
     topico = models.CharField(max_length=100, unique=True)
-    mqtt = models.ForeignKey(Mqtt, on_delete=models.CASCADE, related_name="topics_mqtt")
+    mqtt = models.ForeignKey(Mqtt, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.topico

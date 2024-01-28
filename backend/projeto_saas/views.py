@@ -1,5 +1,12 @@
 from rest_framework import viewsets, status, views
-from projeto_saas.models import Sensor, Topicos, Wifi, Mqtt, Placa, Experimento
+from projeto_saas.models import (
+    Sensor,
+    Topicos,
+    Wifi,
+    Mqtt,
+    Placa,
+    Experimento,
+)
 from django.contrib.auth.models import User
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -60,6 +67,12 @@ class WifiViewSet(viewsets.ModelViewSet):
 class MqttViewSet(viewsets.ModelViewSet):
     queryset = Mqtt.objects.all()
     serializer_class = MqttSerializer
+
+    def get_serializer_context(self):
+        """Adiciona o contexto da requisição ao serializer."""
+        context = super(MqttViewSet, self).get_serializer_context()
+        context.update({"request": self.request})
+        return context
 
 
 class PlacaViewSet(viewsets.ModelViewSet):
