@@ -17,6 +17,7 @@ const SensorConfigurations: React.FC = () => {
   const { control, handleSubmit, watch, register, formState: { errors } } = useForm<InputForm>();
   const [experimentos, setExperimentos] = useState([]);
   const [sensores, setSensores] = useState([]);
+  const [tiposSensores, setTiposSensores] = useState([]); // Estado para armazenar os tipos de sensores
   const [sensoresFiltrados, setSensoresFiltrados] = useState([]);
   const [placas, setPlacas] = useState([]);
   const selectedExperiment = watch("experimento");
@@ -27,8 +28,9 @@ const SensorConfigurations: React.FC = () => {
       try {
         const experimentosData = await fetchExperimentos();
         setExperimentos(experimentosData);
-        const sensoresData = await fetchSensores();
-        setSensores(sensoresData);
+        const tiposSensoresData = await fetchSensores();
+        // setSensores(sensoresData);
+        setTiposSensores(tiposSensoresData);
         const placasData = await placaService.getPlacas();
         setPlacas(placasData);
       } catch (error) {
@@ -38,6 +40,8 @@ const SensorConfigurations: React.FC = () => {
 
     carregarDados();
   }, []);
+
+  // console.log({ sensores })
 
   useEffect(() => {
     if (selectedExperiment) {
@@ -52,7 +56,7 @@ const SensorConfigurations: React.FC = () => {
     try {
 
       const dataModificado = {
-        id: Number(data.tipo_sensor),
+        tipo_sensor: data.tipo_sensor,
         pino_gpio: Number(data.pino_gpio),
         experimento: data.experimento,
         placa: data.placa
@@ -98,8 +102,8 @@ const SensorConfigurations: React.FC = () => {
               <FormControl fullWidth margin="normal">
                 <InputLabel id="tipo-sensor-label">Tipo de Sensor</InputLabel>
                 <Select {...field} labelId="tipo-sensor-label" label="Tipo de Sensor">
-                  {sensoresFiltrados.map((sensor, index) => (
-                    <MenuItem key={index} value={sensor.id}>{sensor.tipo_sensor}</MenuItem>
+                  {tiposSensores.map((tipo, index) => (
+                    <MenuItem key={index} value={tipo[0]}>{tipo[1]}</MenuItem> // Usar valor e rótulo dos tipos
                   ))}
                 </Select>
               </FormControl>

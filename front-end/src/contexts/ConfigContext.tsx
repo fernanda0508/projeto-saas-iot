@@ -25,10 +25,12 @@ interface Configuracoes {
 const ConfiguracoesContext = createContext<{
   configuracoes: Configuracoes;
   guardarConfiguracoes: (novaConfiguracao: Configuracoes) => void;
+  enviarConfiguracoes: () => void; // Adicione esta linha
   enviarConfiguracoesParaAPI: () => Promise<void>;
 }>({
   configuracoes: {},
   guardarConfiguracoes: () => { },
+  enviarConfiguracoes: () => { }, // Adicione esta linha
   enviarConfiguracoesParaAPI: async () => { },
 });
 
@@ -38,6 +40,8 @@ const api = axios.create({
 
 export const ConfiguracoesProvider = ({ children }) => {
   const [configuracoes, setConfiguracoes] = useState<Configuracoes>({});
+  const [prontoParaEnviar, setProntoParaEnviar] = useState(false);
+
 
   const guardarConfiguracoes = (novaConfiguracao: Configuracoes) => {
     setConfiguracoes(prevConfiguracoes => ({ ...prevConfiguracoes, ...novaConfiguracao }));
@@ -48,9 +52,8 @@ export const ConfiguracoesProvider = ({ children }) => {
       try {
         if (configuracoes.sensor) {
           const respostaSensor = await api.post('/projeto_saas/sensores/', configuracoes.sensor);
-          if (configuracoes.sensor.placa === undefined) {
-            configuracoes.sensor.placa = respostaSensor.data.id; // Atualiza o ID da placa no sensor
-          }
+          configuracoes.sensor.placa = respostaSensor.data.id; // Atualiza o ID da placa no sensor
+
         }
         if (configuracoes.mqtt) {
           const respostaMqtt = await api.post('/projeto_saas/mqtt/', configuracoes.mqtt);
@@ -69,13 +72,22 @@ export const ConfiguracoesProvider = ({ children }) => {
         console.error('Erro ao enviar configurações:', error);
       }
     };
-    if (Object.keys(configuracoes).length > 0) {
+    if (prontoParaEnviar && Object.keys(configuracoes).length > 0) {
       enviarConfiguracoesParaAPI();
+      setProntoParaEnviar(false); // Reset após enviar
     }
-  }, [configuracoes]);
+
+    console.log({ configuracoes })
+  }, [configuracoes, prontoParaEnviar]);
+
+  // Adicione uma função para ser chamada quando o usuário clicar em "Gerar Código".
+  const enviarConfiguracoes = () => {
+    setProntoParaEnviar(true);
+  };
+
 
   return (
-    <ConfiguracoesContext.Provider value={{ configuracoes, guardarConfiguracoes }}>
+    <ConfiguracoesContext.Provider value={{ configuracoes, guardarConfiguracoes, enviarConfiguracoes }}>
       {children}
     </ConfiguracoesContext.Provider>
   );

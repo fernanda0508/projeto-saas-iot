@@ -73,7 +73,7 @@ export const fetchExperimentos = async () => {
 };
 
 export const fetchSensores = async () => {
-  const response = await api.get("/projeto_saas/sensores/");
+  const response = await api.get("/projeto_saas/sensores/tipos/");
   return response.data;
 };
 

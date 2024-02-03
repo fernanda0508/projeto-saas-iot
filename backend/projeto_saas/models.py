@@ -38,7 +38,16 @@ class Experimento(models.Model):
 
 
 class Sensor(models.Model):
-    tipo_sensor = models.CharField(max_length=50, default="")
+    SENSOR_CHOICES = [
+        ("FLAME", "Sensor de Chamas"),
+        ("DHT11", "Sensor de Temp/Umidade"),
+        # Adicione mais opções conforme necessário
+    ]
+    tipo_sensor = models.CharField(
+        max_length=50,
+        choices=SENSOR_CHOICES,
+        default="",  # Um valor padrão, se necessário
+    )
     experimento = models.ForeignKey(Experimento, on_delete=models.CASCADE, null=True)
     pino_gpio = models.IntegerField()
     # intervalo_leitura = models.IntegerField()

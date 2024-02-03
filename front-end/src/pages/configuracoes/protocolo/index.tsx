@@ -20,7 +20,7 @@ interface IFormInput {
 const ConfiguracoesMqttWifi: React.FC = () => {
   const { user } = useAuth();
   const { register, handleSubmit, formState: { errors } } = useForm<IFormInput>();
-  const { enviarConfiguracoesParaAPI, guardarConfiguracoes, configuracoes } = useConfiguracoes();
+  const { enviarConfiguracoes, guardarConfiguracoes, configuracoes } = useConfiguracoes();
 
   const onSubmit = (data: IFormInput) => {
     console.log(user.id)
@@ -45,7 +45,10 @@ const ConfiguracoesMqttWifi: React.FC = () => {
       topicos: [{ topico: data.topico }]  // Tópicos como array
     });
 
+    enviarConfiguracoes();
+
   };
+
 
   return (
     <ProtectedRoute>

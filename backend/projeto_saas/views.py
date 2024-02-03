@@ -48,6 +48,10 @@ class SensorViewSet(viewsets.ModelViewSet):
     queryset = Sensor.objects.all()
     serializer_class = SensorSerializer
 
+    @action(detail=False, methods=["get"])
+    def tipos(self, request):
+        return Response(Sensor.SENSOR_CHOICES)
+
 
 class ExperimentoViewSet(viewsets.ModelViewSet):
     queryset = Experimento.objects.all()
