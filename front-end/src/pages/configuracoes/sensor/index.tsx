@@ -24,6 +24,7 @@ const SensorConfigurations: React.FC = () => {
   const [placas, setPlacas] = useState([]);
   const selectedExperiment = watch("experimento");
   const { guardarConfiguracoes } = useConfiguracoes();
+  const placaSelecionada = watch("placa");
 
   useEffect(() => {
     const carregarDados = async () => {
@@ -57,12 +58,14 @@ const SensorConfigurations: React.FC = () => {
 
   const onSubmit: SubmitHandler<InputForm> = async (data) => {
     try {
+      console.log({ data })
       // Cria a placa primeiro
       const novaPlaca = {
         modelo: data.placa,
         usuario: user?.id ?? -1// Supondo que você tenha um campo para o modelo da placa
         // Outros campos necessários para a placa, se houver
       };
+      console.log(novaPlaca)
       const placaCriada = await placaService.salvarConfiguracao(novaPlaca);
 
       // Verifique se a placa foi criada com sucesso
@@ -83,6 +86,9 @@ const SensorConfigurations: React.FC = () => {
       console.error("Erro ao enviar configuração do sensor:", error);
     }
   };
+
+
+  console.log(placaSelecionada)
 
 
   return (
@@ -142,7 +148,12 @@ const SensorConfigurations: React.FC = () => {
             render={({ field }) => (
               <FormControl fullWidth margin="normal">
                 <InputLabel id="placa-label">Modelo da Placa</InputLabel>
-                <Select {...field} labelId="placa-label" label="Modelo da Placa">
+                <Select
+                  {...field}
+                  labelId="placa-label"
+                  label="Modelo da Placa"
+                // value={placaSelecionada}
+                >
                   {placas.map((placa, index) => (
                     <MenuItem key={index} value={placa[0]}>{placa[1]}</MenuItem>
                   ))}

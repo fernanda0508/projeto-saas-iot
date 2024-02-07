@@ -54,7 +54,7 @@ export const placaService = {
     usuario: number;
   }) => {
     const response = await api.post("/projeto_saas/placas/", {
-      modelo_placa: modeloPlaca.modelo,
+      modelo: modeloPlaca.modelo,
       usuario: modeloPlaca.usuario,
     });
     return response.data;

@@ -29,7 +29,7 @@ class Placa(models.Model):
         ("ARDUINO", "Arduino"),
         # Adicione mais modelos conforme necessário
     ]
-    modelo = models.CharField(max_length=100, choices=MODELO_CHOICES, default="ESP32")
+    modelo = models.CharField(max_length=100, choices=MODELO_CHOICES, default="")
     usuario = models.ForeignKey(
         User,
         null=True,
