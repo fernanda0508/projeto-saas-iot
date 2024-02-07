@@ -3,6 +3,7 @@ import axios from 'axios';
 import React, { ReactNode, createContext, useContext, useEffect, useState } from 'react';
 
 interface Configuracoes {
+  idPlaca?: number;
   sensor?: {
     pino_gpio: number;
     experimento: number;

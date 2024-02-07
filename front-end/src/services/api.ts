@@ -49,15 +49,19 @@ export const getUserProfile = async () => {
 };
 
 export const placaService = {
-  salvarConfiguracao: async (modeloPlaca: string) => {
+  salvarConfiguracao: async (modeloPlaca: {
+    modelo: string;
+    usuario: number;
+  }) => {
     const response = await api.post("/projeto_saas/placas/", {
-      modelo_placa: modeloPlaca,
+      modelo_placa: modeloPlaca.modelo,
+      usuario: modeloPlaca.usuario,
     });
     return response.data;
   },
 
   getPlacas: async () => {
-    const response = await api.get("/projeto_saas/placas/");
+    const response = await api.get("/projeto_saas/placas/tipos/");
     return response.data;
   },
 };
@@ -75,6 +79,26 @@ export const fetchExperimentos = async () => {
 export const fetchSensores = async () => {
   const response = await api.get("/projeto_saas/sensores/tipos/");
   return response.data;
+};
+
+export const fetchPlacaDetails = async (placaId: number) => {
+  try {
+    const response = await api.get(`/projeto_saas/placas/${placaId}/`);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao buscar detalhes da placa:", error);
+    return null;
+  }
+};
+
+export const createNewPlaca = async (dadosPlaca: Object) => {
+  try {
+    const response = await api.post("/projeto_saas/placas/", dadosPlaca);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao criar placa:", error);
+    return null;
+  }
 };
 
 export default api;

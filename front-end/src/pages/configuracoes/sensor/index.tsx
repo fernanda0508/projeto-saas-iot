@@ -4,16 +4,18 @@ import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import ProtectedRoute from '@/hooks/useRequireAuth';
 import { placaService, fetchExperimentos, fetchSensores } from '@/services/api';
 import { useConfiguracoes } from '@/contexts/ConfigContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 type InputForm = {
   id: number,
   tipo_sensor: string,
   pino_gpio: number,
   experimento: number,
-  placa: number,
+  placa: string,
 };
 
 const SensorConfigurations: React.FC = () => {
+  const { user } = useAuth();
   const { control, handleSubmit, watch, register, formState: { errors } } = useForm<InputForm>();
   const [experimentos, setExperimentos] = useState([]);
   const [sensores, setSensores] = useState([]);
@@ -41,7 +43,7 @@ const SensorConfigurations: React.FC = () => {
     carregarDados();
   }, []);
 
-  // console.log({ sensores })
+  console.log("Usuárioooooo", user?.id)
 
   useEffect(() => {
     if (selectedExperiment) {
@@ -52,23 +54,36 @@ const SensorConfigurations: React.FC = () => {
     }
   }, [selectedExperiment, sensores]);
 
+
   const onSubmit: SubmitHandler<InputForm> = async (data) => {
     try {
+      // Cria a placa primeiro
+      const novaPlaca = {
+        modelo: data.placa,
+        usuario: user?.id ?? -1// Supondo que você tenha um campo para o modelo da placa
+        // Outros campos necessários para a placa, se houver
+      };
+      const placaCriada = await placaService.salvarConfiguracao(novaPlaca);
 
-      const dataModificado = {
-        tipo_sensor: data.tipo_sensor,
-        pino_gpio: Number(data.pino_gpio),
-        experimento: data.experimento,
-        placa: data.placa
+      // Verifique se a placa foi criada com sucesso
+      if (placaCriada && placaCriada.id) {
+        const dataSensor = {
+          tipo_sensor: data.tipo_sensor,
+          pino_gpio: Number(data.pino_gpio),
+          experimento: data.experimento,
+          placa: placaCriada.id
+        };
+        guardarConfiguracoes({ sensor: dataSensor });
+
+        // Aqui você pode redirecionar para a próxima página ou continuar o fluxo
+      } else {
+        console.error("Erro ao criar placa");
       }
-      guardarConfiguracoes({ sensor: dataModificado });
-      console.log("Dados do sensor armazenados", dataModificado);
     } catch (error) {
       console.error("Erro ao enviar configuração do sensor:", error);
     }
   };
 
-  // console.log({ sensores })
 
   return (
     <ProtectedRoute>
@@ -129,7 +144,7 @@ const SensorConfigurations: React.FC = () => {
                 <InputLabel id="placa-label">Modelo da Placa</InputLabel>
                 <Select {...field} labelId="placa-label" label="Modelo da Placa">
                   {placas.map((placa, index) => (
-                    <MenuItem key={index} value={placa.id}>{placa.modelo}</MenuItem>
+                    <MenuItem key={index} value={placa[0]}>{placa[1]}</MenuItem>
                   ))}
                 </Select>
               </FormControl>

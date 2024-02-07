@@ -8,6 +8,7 @@ from .views import (
     MqttViewSet,
     PlacaViewSet,
     ExperimentoViewSet,
+    PlacaDetailView,
 )
 
 router = DefaultRouter()
@@ -25,4 +26,5 @@ router.register(r"placas", PlacaViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("placa/<int:pk>/", PlacaDetailView.as_view(), name="placa-detail"),
 ]

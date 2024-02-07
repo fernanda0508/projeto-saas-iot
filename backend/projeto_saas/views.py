@@ -7,6 +7,7 @@ from projeto_saas.models import (
     Placa,
     Experimento,
 )
+from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -20,6 +21,25 @@ from projeto_saas.serializers import (
     PlacaSerializer,
     ExperimentoSerializer,
 )
+
+
+class PlacaDetailView(APIView):
+    def get(self, request, pk):
+        placa = Placa.objects.get(pk=pk)
+        wifi = Wifi.objects.filter(placa=placa)
+        mqtt = Mqtt.objects.filter(placa=placa)
+        sensores = Sensor.objects.filter(placa=placa)
+        topicos = Topicos.objects.filter(mqtt__placa=placa)
+
+        # Serializa todos os dados
+        data = {
+            "placa": PlacaSerializer(placa).data,
+            "wifi": WifiSerializer(wifi, many=True).data,
+            "mqtt": MqttSerializer(mqtt, many=True).data,
+            "sensores": SensorSerializer(sensores, many=True).data,
+            "topicos": TopicosSerializer(topicos, many=True).data,
+        }
+        return Response(data)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -82,3 +102,14 @@ class MqttViewSet(viewsets.ModelViewSet):
 class PlacaViewSet(viewsets.ModelViewSet):
     queryset = Placa.objects.all()
     serializer_class = PlacaSerializer
+
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
+    def minhas_placas(self, request):
+        # Filtra as placas com base no usuário autenticado
+        placas_do_usuario = Placa.objects.filter(usuario=request.user)
+        serializer = self.get_serializer(placas_do_usuario, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def tipos(self, request):
+        return Response(Placa.MODELO_CHOICES)
