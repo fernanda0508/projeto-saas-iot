@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Paper, FormControl, InputLabel, MenuItem, Select, TextField, Typography, Button } from '@mui/material';
+import { Box, Paper, FormControl, InputLabel, MenuItem, Select, TextField, Typography, Button, FormHelperText } from '@mui/material';
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import ProtectedRoute from '@/hooks/useRequireAuth';
 import { placaService, fetchExperimentos, fetchSensores } from '@/services/api';
 import { useConfiguracoes } from '@/contexts/ConfigContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/router';
+import Swal from 'sweetalert2';
+
 
 type InputForm = {
   id: number,
@@ -13,6 +16,11 @@ type InputForm = {
   experimento: number,
   placa: string,
 };
+
+type experimento = {
+  id: number,
+  tipo_experimento: string
+}
 
 const SensorConfigurations: React.FC = () => {
   const { user } = useAuth();
@@ -25,6 +33,7 @@ const SensorConfigurations: React.FC = () => {
   const selectedExperiment = watch("experimento");
   const { guardarConfiguracoes } = useConfiguracoes();
   const placaSelecionada = watch("placa");
+  const router = useRouter();
 
   useEffect(() => {
     const carregarDados = async () => {
@@ -58,17 +67,15 @@ const SensorConfigurations: React.FC = () => {
 
   const onSubmit: SubmitHandler<InputForm> = async (data) => {
     try {
-      console.log({ data })
-      // Cria a placa primeiro
+      console.log({ data });
       const novaPlaca = {
         modelo: data.placa,
-        usuario: user?.id ?? -1// Supondo que você tenha um campo para o modelo da placa
+        usuario: user?.id ?? -1
         // Outros campos necessários para a placa, se houver
       };
-      console.log(novaPlaca)
+      console.log(novaPlaca);
       const placaCriada = await placaService.salvarConfiguracao(novaPlaca);
 
-      // Verifique se a placa foi criada com sucesso
       if (placaCriada && placaCriada.id) {
         const dataSensor = {
           tipo_sensor: data.tipo_sensor,
@@ -78,12 +85,34 @@ const SensorConfigurations: React.FC = () => {
         };
         guardarConfiguracoes({ sensor: dataSensor });
 
-        // Aqui você pode redirecionar para a próxima página ou continuar o fluxo
+        // Mensagem de sucesso
+        await Swal.fire({
+          title: 'Sucesso!',
+          text: 'Placa e configurações do sensor salvas com sucesso.',
+          icon: 'success',
+          confirmButtonText: 'Ok'
+        });
+
+        router.push('/configuracoes/protocolo');
       } else {
-        console.error("Erro ao criar placa");
+        // Mensagem de erro
+        Swal.fire({
+          title: 'Erro!',
+          text: 'Não foi possível criar a placa.',
+          icon: 'error',
+          confirmButtonText: 'Ok'
+        });
       }
     } catch (error) {
       console.error("Erro ao enviar configuração do sensor:", error);
+
+      // Mensagem de erro
+      Swal.fire({
+        title: 'Erro!',
+        text: 'Ocorreu um erro ao salvar as configurações.',
+        icon: 'error',
+        confirmButtonText: 'Ok'
+      });
     }
   };
 
@@ -100,16 +129,16 @@ const SensorConfigurations: React.FC = () => {
           <Controller
             name="experimento"
             control={control}
-            defaultValue=""
             rules={{ required: "Este campo é obrigatório" }}
             render={({ field }) => (
               <FormControl fullWidth margin="normal">
                 <InputLabel id="experimento-label">Tipo de Experimento</InputLabel>
-                <Select {...field} labelId="experimento-label" label="Tipo de Experimento">
-                  {experimentos.map((exp, index) => (
+                <Select {...field} labelId="experimento-label" label="Tipo de Experimento" error={!!errors.experimento}>
+                  {experimentos.map((exp: experimento, index: number) => (
                     <MenuItem key={index} value={exp.id}>{exp.tipo_experimento}</MenuItem>
                   ))}
                 </Select>
+                <FormHelperText error>{errors.experimento?.message}</FormHelperText>
               </FormControl>
             )}
           />
@@ -122,11 +151,12 @@ const SensorConfigurations: React.FC = () => {
             render={({ field }) => (
               <FormControl fullWidth margin="normal">
                 <InputLabel id="tipo-sensor-label">Tipo de Sensor</InputLabel>
-                <Select {...field} labelId="tipo-sensor-label" label="Tipo de Sensor">
+                <Select {...field} labelId="tipo-sensor-label" label="Tipo de Sensor" error={!!errors.tipo_sensor}>
                   {tiposSensores.map((tipo, index) => (
                     <MenuItem key={index} value={tipo[0]}>{tipo[1]}</MenuItem> // Usar valor e rótulo dos tipos
                   ))}
                 </Select>
+                <FormHelperText error>{errors.tipo_sensor?.message}</FormHelperText>
               </FormControl>
             )}
           />
@@ -152,12 +182,14 @@ const SensorConfigurations: React.FC = () => {
                   {...field}
                   labelId="placa-label"
                   label="Modelo da Placa"
+                  error={!!errors.placa}
                 // value={placaSelecionada}
                 >
                   {placas.map((placa, index) => (
                     <MenuItem key={index} value={placa[0]}>{placa[1]}</MenuItem>
                   ))}
                 </Select>
+                <FormHelperText error>{errors.placa?.message}</FormHelperText>
               </FormControl>
             )}
           />
