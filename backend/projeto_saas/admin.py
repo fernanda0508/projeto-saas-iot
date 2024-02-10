@@ -30,8 +30,8 @@ class MqttAdmin(admin.ModelAdmin):
 
 
 class PlacaAdmin(admin.ModelAdmin):
-    list_display = ("modelo",)
-    list_filter = ("modelo",)
+    list_display = ("modelo", "usuario")
+    list_filter = ("modelo", "usuario")
     search_fields = ("modelo",)
 
 

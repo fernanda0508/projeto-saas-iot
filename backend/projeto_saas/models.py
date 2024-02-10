@@ -24,10 +24,21 @@ class Mqtt(models.Model):
 
 
 class Placa(models.Model):
-    modelo = models.CharField(max_length=100)
+    MODELO_CHOICES = [
+        ("ESP32", "ESP32"),
+        ("ARDUINO", "Arduino"),
+        # Adicione mais modelos conforme necessário
+    ]
+    modelo = models.CharField(max_length=100, choices=MODELO_CHOICES, default="")
+    usuario = models.ForeignKey(
+        User,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="placa_user",
+    )
 
     def __str__(self):
-        return self.modelo
+        return self.get_modelo_display()  # Retorna a representação legível do modelo
 
 
 class Experimento(models.Model):

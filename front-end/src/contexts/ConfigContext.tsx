@@ -1,8 +1,10 @@
 // context/ConfiguracoesContext.tsx
 import axios from 'axios';
 import React, { ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import Swal from 'sweetalert2';
 
 interface Configuracoes {
+  idPlaca?: number;
   sensor?: {
     pino_gpio: number;
     experimento: number;
@@ -67,9 +69,19 @@ export const ConfiguracoesProvider = ({ children }) => {
             await api.post('/projeto_saas/topicos/', { ...topico, mqtt: configuracoes.mqttId });
           }
         }
-        console.log('Configurações enviadas com sucesso');
+        await Swal.fire({
+          title: 'Configurações Salvas!',
+          text: 'Todas as configurações foram salvas com sucesso.',
+          icon: 'success',
+          confirmButtonText: 'Ok'
+        });
       } catch (error) {
-        console.error('Erro ao enviar configurações:', error);
+        Swal.fire({
+          title: 'Erro!',
+          text: 'Houve um problema ao salvar as configurações.',
+          icon: 'error',
+          confirmButtonText: 'Ok'
+        });
       }
     };
     if (prontoParaEnviar && Object.keys(configuracoes).length > 0) {

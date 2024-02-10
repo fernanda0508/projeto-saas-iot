@@ -82,7 +82,7 @@ class MqttSerializer(serializers.ModelSerializer):
 class PlacaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Placa
-        fields = ["id", "modelo"]
+        fields = ["id", "modelo", "usuario"]
 
     def create(self, validated_data):
         placa_instance = Placa.objects.create(**validated_data)
