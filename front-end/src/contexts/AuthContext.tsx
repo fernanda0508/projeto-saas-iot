@@ -1,6 +1,6 @@
 // context/AuthContext.tsx
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { authService, getUserProfile } from '@/services/api';
+import { authService, userProfileService } from '@/services/api';
 import Router from 'next/router';
 import axios from "axios";
 
@@ -40,8 +40,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserProfile = async () => {
     try {
-      const userProfile = await getUserProfile();
-      setUser(userProfile);
+      const userProfile = await userProfileService.getProfile();
+      setUser(userProfile.data);
       setIsAuthenticated(true);
     } catch (error) {
       console.error('Erro ao buscar perfil do usuário', error);
@@ -53,10 +53,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (username: string, password: string) => {
     try {
-      const data = await authService.login(username, password);
-      localStorage.setItem('accessToken', data.access);
-      localStorage.setItem('refreshToken', data.refresh);
-      setAxiosAuthToken(data.access);
+      const response = await authService.login(username, password);
+      localStorage.setItem('accessToken', response.data.access);
+      localStorage.setItem('refreshToken', response.data.refresh);
+      setAxiosAuthToken(response.data.access);
       await fetchUserProfile();
       Router.push('/');
     } catch (error) {

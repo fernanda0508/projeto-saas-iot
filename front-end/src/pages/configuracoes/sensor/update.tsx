@@ -33,14 +33,29 @@ const SensorConfigurations: React.FC = () => {
   const [listMqtt, setListMqtt] = useState([])
   const selectedExperiment = watch("experimento");
   const { guardarConfiguracoes } = useConfiguracoes();
-  const placaSelecionada = watch("placa");
+  const [Dados, setDados] = useState([]);
   const router = useRouter();
+
+  useEffect(() => {
+    // Carregar os experimentos
+    const fetchExperimentos = async () => {
+      try {
+        const experimentosResponse = await experimentoService.fetchExperimentos();
+        setExperimentos(experimentosResponse.data);
+      } catch (error) {
+        console.error("Erro ao carregar experimentos:", error);
+      }
+    };
+
+    fetchExperimentos();
+  }, []); // Carregar apenas uma vez quando o componente é montado
+
+
 
   useEffect(() => {
     const carregarDados = async () => {
       try {
-        const experimentosResponse = await experimentoService.fetchExperimentos();
-        setExperimentos(experimentosResponse.data); // Acessa apenas os dados da resposta
+
 
         const tiposSensoresResponse = await sensorService.fetchSensores();
         setTiposSensores(tiposSensoresResponse.data); // Acessa apenas os dados da resposta
@@ -48,13 +63,28 @@ const SensorConfigurations: React.FC = () => {
         const placasResponse = await placaService.getPlacas();
         setPlacas(placasResponse.data); // Acessa apenas os dados da resposta
         const mqttResponse = await mqttService.fetchMqtt();
-        setListMqtt(mqttResponse.data);
-        const mqttDoUsuario: any = listMqtt.find((mqtt: any) => mqtt.usuario === user?.id);
+        const mqttDoUsuario = mqttResponse.data.find(mqtt => mqtt.usuario === user?.id);
+        console.log(mqttDoUsuario.placa)
         if (mqttDoUsuario) {
-          // Usar o 'reset' do react-hook-form para definir os valores padrão do formulário
-          reset({
-            ...mqttDoUsuario // Supondo que os campos de mqttDoUsuario correspondem aos do formulário
-          });
+          const placaDetailsResponse = await placaService.fetchPlacaDetails(mqttDoUsuario.placa);
+          const dados = placaDetailsResponse.data;
+          // Preparando os dados para o formulário
+          const dadosFormulario = {
+            placa: dados.placa.modelo,
+            experimento: dados.sensores[0]?.experimento,
+            pino_gpio: dados.sensores.pino_gpio,
+            tipo_sensor: dados.sensores.tipo_sensor,
+          };
+
+          // Se você tiver um campo de sensores e quiser usar o primeiro sensor como padrão
+          if (dados.sensores && dados.sensores.length > 0) {
+            dadosFormulario.tipo_sensor = dados.sensores[0].tipo_sensor;
+            dadosFormulario.pino_gpio = dados.sensores[0].pino_gpio;
+            // dadosFormulario.experimento = dados.sensores[0].experimento;
+          }
+          // Usando a função reset para preencher os campos
+          reset(dadosFormulario);
+
         }
       } catch (error) {
         console.error("Erro ao carregar dados da API", error);
@@ -62,7 +92,22 @@ const SensorConfigurations: React.FC = () => {
     };
 
     carregarDados();
-  }, []);
+  }, [reset, user?.id]);
+
+
+  console.log(experimentos)
+
+
+  // console.log(mqttDoUsuario?.placa)
+
+  // useEffect(async () => {
+
+  // }, [mqttDoUsuario]);
+
+  console.log({ Dados })
+
+
+
 
   useEffect(() => {
     if (selectedExperiment) {
@@ -72,6 +117,8 @@ const SensorConfigurations: React.FC = () => {
       setSensoresFiltrados([]);
     }
   }, [selectedExperiment, sensores]);
+
+
 
 
   const onSubmit: SubmitHandler<InputForm> = async (data) => {
@@ -89,7 +136,7 @@ const SensorConfigurations: React.FC = () => {
         const dataSensor = {
           tipo_sensor: data.tipo_sensor,
           pino_gpio: Number(data.pino_gpio),
-          experimento: data.experimento,
+          experimento: data?.experimento,
           placa: placaCriada.data.id
         };
         guardarConfiguracoes({ sensor: dataSensor });
@@ -140,8 +187,8 @@ const SensorConfigurations: React.FC = () => {
               <FormControl fullWidth margin="normal">
                 <InputLabel id="experimento-label">Tipo de Experimento</InputLabel>
                 <Select {...field} labelId="experimento-label" label="Tipo de Experimento" error={!!errors.experimento}>
-                  {experimentos.map((exp: experimento, index: number) => (
-                    <MenuItem key={index} value={exp.id}>{exp.tipo_experimento}</MenuItem>
+                  {experimentos.map((exp: any, index: number) => (
+                    <MenuItem key={index} value={exp.id}>{exp.tipo_experimento}</MenuItem> // Valor ajustado para nome do experimento
                   ))}
                 </Select>
                 <FormHelperText error>{errors.experimento?.message}</FormHelperText>

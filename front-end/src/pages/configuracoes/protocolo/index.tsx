@@ -23,7 +23,7 @@ const ConfiguracoesMqttWifi: React.FC = () => {
   const { enviarConfiguracoes, guardarConfiguracoes, configuracoes } = useConfiguracoes();
 
   const onSubmit = (data: IFormInput) => {
-    console.log(user.id)
+    console.log(user?.id)
     // Preparar dados para o MQTT e Wi-Fi
     const dadosMqtt = {
       host: data.host,

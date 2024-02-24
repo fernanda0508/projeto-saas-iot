@@ -3,7 +3,7 @@ import axios from "axios";
 
 // Configuração inicial do Axios
 const api = axios.create({
-  baseURL: "http://localhost:8000", // Substitua pela URL base do seu backend Django
+  baseURL: "http://localhost:8000", // Substitua pela URL base do seu backend
 });
 
 // Interceptor para incluir o token de acesso em todas as requisições
@@ -20,85 +20,41 @@ api.interceptors.request.use(
   }
 );
 
-// Funções para os endpoints de autenticação
 export const authService = {
-  login: async (username: string, password: string) => {
-    const response = await api.post("/api/token/", { username, password });
-    return response.data;
-  },
-  refreshToken: async (refreshToken: string) => {
-    const response = await api.post("/api/token/refresh/", {
-      refresh: refreshToken,
-    });
-    return response.data;
-  },
-  register: async (username: string, email: string, password: string) => {
-    const response = await api.post("/projeto_saas/users/", {
-      username,
-      email,
-      password,
-    });
-    return response.data;
-  },
+  login: (username: string, password: string) =>
+    api.post("/api/token/", { username, password }),
+  refreshToken: (refreshToken: string) =>
+    api.post("/api/token/refresh/", { refresh: refreshToken }),
+  register: (username: string, email: string, password: string) =>
+    api.post("/projeto_saas/users/", { username, email, password }),
 };
 
-// Função separada para obter o perfil do usuário
-export const getUserProfile = async () => {
-  const response = await api.get("/projeto_saas/users/me/");
-  return response.data;
+export const userProfileService = {
+  getProfile: () => api.get("/projeto_saas/users/me/"),
 };
 
 export const placaService = {
-  salvarConfiguracao: async (modeloPlaca: {
-    modelo: string;
-    usuario: number;
-  }) => {
-    const response = await api.post("/projeto_saas/placas/", {
-      modelo: modeloPlaca.modelo,
-      usuario: modeloPlaca.usuario,
-    });
-    return response.data;
-  },
-
-  getPlacas: async () => {
-    const response = await api.get("/projeto_saas/placas/tipos/");
-    return response.data;
-  },
+  salvarConfiguracao: (modeloPlaca: { modelo: string; usuario: number }) =>
+    api.post("/projeto_saas/placas/", modeloPlaca),
+  getPlacas: () => api.get("/projeto_saas/placas/tipos/"),
+  fetchPlacaDetails: (placaId: number) =>
+    api.get(`/projeto_saas/placa/${placaId}/`),
+  createNewPlaca: (dadosPlaca: Object) =>
+    api.post("/projeto_saas/placas/", dadosPlaca),
 };
 
-export const createSensorConfiguration = async (configurationData: any) => {
-  const response = await api.post("/projeto_saas/sensores/", configurationData);
-  return response.data;
+export const sensorService = {
+  createConfiguration: (configurationData: any) =>
+    api.post("/projeto_saas/sensores/", configurationData),
+  fetchSensores: () => api.get("/projeto_saas/sensores/tipos/"),
 };
 
-export const fetchExperimentos = async () => {
-  const response = await api.get("/projeto_saas/experimentos/");
-  return response.data;
+export const experimentoService = {
+  fetchExperimentos: () => api.get("/projeto_saas/experimentos/"),
 };
 
-export const fetchSensores = async () => {
-  const response = await api.get("/projeto_saas/sensores/tipos/");
-  return response.data;
-};
-
-export const fetchPlacaDetails = async (placaId: number) => {
-  try {
-    const response = await api.get(`/projeto_saas/placas/${placaId}/`);
-    return response.data;
-  } catch (error) {
-    console.error("Erro ao buscar detalhes da placa:", error);
-    return null;
-  }
-};
-
-export const createNewPlaca = async (dadosPlaca: Object) => {
-  try {
-    const response = await api.post("/projeto_saas/placas/", dadosPlaca);
-    return response.data;
-  } catch (error) {
-    console.error("Erro ao criar placa:", error);
-    return null;
-  }
+export const mqttService = {
+  fetchMqtt: () => api.get("/projeto_saas/mqtt/"),
 };
 
 export default api;
